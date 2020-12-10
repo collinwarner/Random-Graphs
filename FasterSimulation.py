@@ -169,25 +169,22 @@ def get_sizes(graph, p):
             sizes.append(size)
     return sizes
 
-def run_sim(graph, n, num_trials, num_p):
-    s_p = np.log(n)/(2*n)
-    p_range = []
-    diff = np.log(n)/n
-    p_epsilon = diff/num_p 
-    s_p += p_epsilon
-    while s_p <=3*np.log(n)/(2*n):
-        p_range.append(s_p)
-        s_p += p_epsilon
+def run_sim(graph, n, num_trials, p_range):
     trials = []    
     for i, p in enumerate(p_range):
         current_trial = []
+
         for _ in range(num_trials):
             print("creating graph")
             adj = graph(n, p)
-            print("finished graph")
-            current_trial.append(is_connected(adj, p))
             sizes = get_sizes(adj, p)
 
+            print("finished graph")
+            #current_trial.append(is_connected(adj, p))
+            sizes.sort()
+            biggest = sizes[-1]
+            second_biggest = 0 if len(sizes) <2 else sizes[-2]
+            current_trial.append((is_connected(adj, p), biggest/n, second_biggest/biggest))
             print(f"finished trial | num isolated {count_isolated(sizes)}")
         trials.append((p, current_trial, count_isolated(sizes)/n))
         print(f"Iteration {i} || finished p {p}")
@@ -199,35 +196,61 @@ def triangle_free(n, p):
     return generate_no_triangles_part2(generate_no_triangles_part1(n, p), p)
 
 def plot_random_graph(model1, model2, n, remove_features = lambda x : x):
-    fig, axs = plt.subplots(2)
+    fig, axs = plt.subplots(3)
 
     num_trials = 1
     num_p = 100
-    trials1 = run_sim(model1, n, num_trials, num_p)
-    trials2 = run_sim(model2, n, num_trials, num_p)
+
+    s_p = np.log(n)/(2*n)
+    p_range = []
+    diff = np.log(n)/n
+    p_epsilon = diff/num_p 
+    s_p += p_epsilon
+    while s_p <=3*np.log(n)/(2*n):
+        p_range.append(s_p)
+        s_p += p_epsilon
+    
+    # lam = 0.5
+    # s_p = lam/n
+    # p_range2 = []
+    # diff = 1
+    # l_epsilon = diff/num_p
+    # while lam <=1.5:
+    #     p_range2.append(s_p)
+    #     lam += l_epsilon
+    #     s_p = lam/n
+    trials1 = run_sim(model1, n, num_trials, p_range)
+    trials2 = run_sim(model2, n, num_trials, p_range)
+    print(f"trials over {(model1, model2, n)}")
     x1 = []
     y1 = []
+    z1 = []
     xi1 = []
     yi1 = []
+
+
+
     for val in trials1:
         p, connected_vals, num_isolated = val
         for c in connected_vals:
             x1.append(p)
-            y1.append(1 if c else 0)
+            y1.append(1 if c[0] else 0)
+            z1.append(c[1])
         xi1.append(p)
         yi1.append(num_isolated)
     x2 = []
     y2 = []
+    z2 = []
     xi2 = []
     yi2 = []
     for val in trials2:
         p, connected_vals, num_isolated = val
         for c in connected_vals:
             x2.append(p)
-            y2.append(1 if c else 0)
+            y2.append(1 if c[0] else 0)
+            z2.append(c[1])
         xi2.append(p)
         yi2.append(num_isolated)
-    #plt.clear()
     axs[0].plot(x1, y1, 'o', color='blue')
     axs[0].plot(x2, y2, 'o', color='orange')
     threshold = np.log(n)/n
@@ -236,6 +259,9 @@ def plot_random_graph(model1, model2, n, remove_features = lambda x : x):
     axs[0].plot(threshold_x, threshold_y, color='red')
     axs[1].plot(xi1, yi1, color='blue')
     axs[1].plot(xi2, yi2, color='orange')
+
+    axs[2].plot(x1, z1, 'o', color='blue')
+    axs[2].plot(x2, z2, 'o', color='orange')
 
     plt.show()
     
