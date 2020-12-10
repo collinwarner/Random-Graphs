@@ -1,8 +1,6 @@
 import matplotlib.pyplot as plt
 from math import comb
-from numpy.random import default_rng, SeedSequence, uniform, Generator
-import multiprocessing
-import concurrent.futures
+from numpy.random import default_rng, SeedSequence, uniform 
 import numpy as np
 
 
@@ -112,17 +110,7 @@ def bfs(adj, s):
                     level[-1].append(v)
     return parent
 
-def dfs(adj, s, parent = None, order = None):
-    if parent is None:
-        parent = [None for v in adj]
-        order = []
-
-    for v in adj[s]:
-        if parent[v] is None:
-            parent[v] = s
-            dfs(adj, v, parent, order)
-    order.append(s)
-    return parent, order 
+ 
 
 def is_connected(graph, p):  
     adj = [None ]*graph.shape[0]
@@ -266,38 +254,6 @@ def plot_random_graph(model1, model2, n, remove_features = lambda x : x):
     plt.show()
     
 
-    
-def run_sim_giant_comp(graph, n, num_trials, num_p):
-    lam = 0.5
-    s_p = lam/n
-    p_range = []
-    diff = 1
-    l_epsilon = diff/num_p
-    while lam <=1.5:
-        p_range.append(s_p)
-        lam += l_epsilon
-        s_p = lam/n
-    # p_range = [p/100 for p in range(1, 100)]
-    trials = []    
-    for i, p in enumerate(p_range):
-        current_trial = []
-        for _ in range(num_trials):
-            print("creating graph")
-            adj = graph(n, p)
-            print("finished graph")
-            sizes = get_sizes(adj, p)
-            sizes.sort()
-            biggest = sizes[-1]
-            second_biggest = 0 if len(sizes) <2 else sizes[-2]
-            current_trial.append((biggest/n, second_biggest/biggest))
-            print(f"finished trial | sizes sum to {sum(sizes)}, largest size {biggest}, second largest {second_biggest}, num isolated {count_isolated(sizes)}")
-        trials.append((p, current_trial))
-        print(f"Iteration {i} || finished p {p}")
-    return trials
-
-
-
-
 def count_isolated(sizes):
     num_i = 0
     for size in sizes:
@@ -305,23 +261,3 @@ def count_isolated(sizes):
             num_i +=1
     return num_i
         
-def plot_random_graph_giant_comp(model, n, remove_features = lambda x : x):
-    num_trials = 1
-    num_p = 100
-    trials = run_sim_giant_comp(lambda np, pp : model(np, pp), n, num_trials, num_p)
-    x = []
-    y = [] #biggest vs n
-    z = [] #biggest vs second biggest
-    for val in trials:
-        p, size_vals = val
-        for c in size_vals:
-            x.append(p)
-            y.append(c[0])
-            z.append(c[1])
-    
-    plt.plot(x, y, 'o', color='black')
-    threshold = np.log(n)/n
-    threshold_x = [threshold, threshold]
-    threshold_y = [0, 1]
-    # plt.plot(threshold_x, threshold_y, color='red')
-    plt.show()
