@@ -1,5 +1,4 @@
 from math import comb
-
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.random import default_rng
@@ -42,6 +41,9 @@ def generate_erdos_renyi(n, p):
 
 """
 starting point for creating no stars. Right now impractically slow O(n^4)
+
+graph: adjacency matrix of a graph
+p: probability threshold
 """
 def generate_no_stars_part2(graph, p):
     for i in range(len(graph)):
@@ -177,6 +179,11 @@ def create_adj_graph(graph, p):
 
 """
 Checks if a graph is connected
+
+graph: adjacency matrix of a graph
+p: probability threshold
+
+returns: 0 if graph is not connected, 1 if it is
 """
 def is_connected(graph, p):
     adj = create_adj_graph(graph, p)
@@ -189,6 +196,11 @@ def is_connected(graph, p):
 
 """
 Gets the sizes of the different components of the input graph
+
+graph: adjacency matrix of a graph
+p: probability threshold
+
+returns: sizes (list of component sizes in no particular order)
 """
 def get_sizes(graph, p):
     adj = create_adj_graph(graph, p)
@@ -212,6 +224,10 @@ def get_sizes(graph, p):
 
 """
 Counts the number of isolated vertices
+
+sizes: list of component sizes of a graph
+
+returns: num_i (integer of the number of isolated components)
 """
 def count_isolated(sizes):
     num_i = 0
